@@ -35,7 +35,7 @@ func (p *Parser) Parse_func_def() FuncDefStmt {
 	// TODO: parse params
 	p.expect_token_type(token.CLOSE_PARAN)
 
-    body := p.parse_body()
+	body := p.parse_body()
 
 	return FuncDefStmt{
 		Ident: ident,
@@ -51,9 +51,12 @@ func (p *Parser) parse_body() BodyStatement {
 	// parse function call expression
 	funcCall := p.parse_expr()
 	stmts = append(stmts, funcCall)
+	p.expect_token_type(token.SEMICOLON)
+
+	stmts = append(stmts, p.parse_expr())
+	p.expect_token_type(token.SEMICOLON)
 
 	// FIXME: for now only parsing function call statement
-	p.expect_token_type(token.SEMICOLON)
 	p.expect_token_type(token.CLOSE_CURLY)
 
 	return BodyStatement{

@@ -4,20 +4,34 @@ import (
 	"fmt"
 	"nox/internals/parser"
 	"nox/internals/token"
+	"strconv"
 )
 
 func Eval_func_def(fn parser.FuncDefStmt) /*TODO:*/ {
 	fn_call := fn.Body.Stmts[0].(parser.ExpressionStmt) // FIXME: remove hard coding
+	fn_call_str := fn.Body.Stmts[1].(parser.ExpressionStmt)
 
 	if fn_call.Type != parser.EXPR_FUNC_CALL {
 		panic("Expected function call got: " + fn_call.Type)
 	}
 	eval_func_call(fn_call.Value.AsFuncCall)
+
+	if fn_call_str.Type != parser.EXPR_FUNC_CALL {
+		panic("Expected function call got: " + fn_call_str.Type)
+	}
+	eval_func_call(fn_call_str.Value.AsFuncCall)
 }
 
 func eval_func_call(fnc parser.FuncCallExpr) {
 	expr := fnc.Args[0]
-	value := parse_bin_expr(expr)
+	var value string
+	switch expr.Type {
+	case parser.EXPR_TYPE_BIN:
+		value = strconv.FormatInt(parse_bin_expr(expr), 10)
+
+	case parser.EXPR_TYPE_STR:
+		value = expr.Value.AsStr.Value
+	}
 
 	if fnc.Ident != "print" {
 		panic("Something else popped up (other then ur cheerry heheheh): " + fnc.Ident)

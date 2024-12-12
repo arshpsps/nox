@@ -13,9 +13,11 @@ const (
 	EXPR_TYPE_FUNC = "func_call"
 	EXPR_TYPE_BIN  = "bin_op"
 	EXPR_TYPE_INT  = "int"
+	EXPR_TYPE_STR  = "str"
 )
 
 type ExprValue struct {
+	AsStr      StrExpr
 	AsFuncCall FuncCallExpr
 	AsBinOp    BinaryExpr
 	AsInt      IntExpr
@@ -73,6 +75,20 @@ func (p *Parser) parse_primary_exprs() ExpressionStmt {
 				},
 			}
 		}
+	case token.STR:
+		{
+			value := p.tok.Literal
+			p.next_token()
+
+			return ExpressionStmt{
+				Type: EXPR_TYPE_STR,
+				Value: ExprValue{
+					AsStr: StrExpr{
+						Value: value,
+					},
+				},
+			}
+		}
 	case token.IDENT:
 		{
 			if p.expect_peek(token.OPEN_PARAN) { // function calls
@@ -81,19 +97,19 @@ func (p *Parser) parse_primary_exprs() ExpressionStmt {
 				return ExpressionStmt{} // TODO: handle variables
 			}
 		}
-    case token.OPEN_PARAN: // (..Expr..)
-        {
-            p.next_token()
-            if p.expect_peek(token.CLOSE_PARAN) {
-                return ExpressionStmt{}
-            }
+	case token.OPEN_PARAN: // (..Expr..)
+		{
+			p.next_token()
+			if p.expect_peek(token.CLOSE_PARAN) {
+				return ExpressionStmt{}
+			}
 
-            expr := p.parse_expr()
+			expr := p.parse_expr()
 
-            p.expect_token_type(token.CLOSE_PARAN)
+			p.expect_token_type(token.CLOSE_PARAN)
 
-            return expr
-        }
+			return expr
+		}
 	default: // FIXME: add guard with all non-primary tokens rather than panic
 		panic("Not an primary expression: " + p.tok.Type.String())
 	}
